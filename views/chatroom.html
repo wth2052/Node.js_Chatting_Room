@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Devvil Chatting Room</title>
+    <style>
+        #container {
+            width: 400px;
+            height: 400px;
+            border: 1px solid black;
+            background: ivory;
+        }
+
+        #onlineDiv {
+            width: 100px;
+            height: 100px;
+        }
+
+        #chatView {
+            height: 90%;
+            overflow-y: scroll;
+        }
+
+        #chatForm {
+            height: 10%;
+            border-top: 1px solid black;
+            text-align: center;
+        }
+
+        #msg {
+            width: 80%;
+            height: 32px;
+            border-radius: 8px;
+        }
+
+        .msgLine {
+            margin: 15px;
+        }
+
+        .msgBox {
+            border: 1px solid black;
+            background: skyblue;
+            padding: 2px 5px;
+            border-radius: 10px;
+        }
+
+        #send {
+            width: 16%;
+            height: 34px;
+            border-radius: 50px;
+            background: black;
+            color: white;
+        }
+
+        #nicknameForm {
+
+            border: none;
+            padding: 10px 5px;
+            margin: 0px 0px 40px;
+            position: fixed;
+            bottom: 0%;
+            height: 5%;
+            float: left;
+        }
+
+        #nicknameForminput:focus {
+            outline: none;
+        }
+
+        #nicknameForm>button {
+            background: #333;
+            border: none;
+            padding: 0 1rem;
+            margin: 0.3rem;
+            border-radius: 3px;
+            outline: none;
+            color: #fff;
+        }
+    </style>
+
+<body>
+    <div id="container">
+        <div id="chatView">
+
+            <div id="editing"></div>
+            <form id="nicknameForm" action="">
+                <input id="nickname" placeholder="원하는 닉네임 입력" autocomplete="off" /><button>변경</button>
+                <div id="online"></div>
+            </form>
+        </div>
+        <form id="chatForm" onsubmit="return false">
+
+            <input type="text" id="msg">
+            <input type="submit" id="send" value="전송">
+        </form>
+    </div>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+
+        var socket = io();
+
+        var chatView = document.getElementById('chatView');
+        var chatForm = document.getElementById('chatForm');
+        var nicknameForm = document.getElementById('nicknameForm');
+        var nicknameInput = document.getElementById('nicknameInput');
+        var editingDiv = document.getElementById('editing');
+        var onlineDiv = document.getElementById('online');
+        nicknameForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // if (nicknameInput.value) {
+            //     socket.emit('nickname', nicknameInput.value);
+            // }
+        });
+
+        socket.on('connect', (socket, nickname) => {
+            var nickname = prompt('닉네임을 설정해주세요. 취소 버튼을 누를시 기본값은 익명입니다.', '');
+            socket.emit('Message Send', nickname)
+        });
+
+        //chatForm에서 일어나는 EventListener에 대한 처리이며, 확인버튼을 눌렀을경우 발동함
+        chatForm.addEventListener('submit', function () {
+            var msg = $('#msg');
+            var nickname = $('#nickname')
+            if (msg.val() === '') {
+                return;
+
+            } else {
+                //내가 보내는 메세지
+                socket.emit('Message Send', msg.val(), nickname.val());
+
+                var msgLine = $('<div class="msgLine">');
+                var msgBox = $('<div class="msgBox">');
+                var nickLine = $('<div class="nickLine">');
+                var nickBox = $('<div class="nickBox">');
+
+                nickBox.css('display', 'inline-block');
+                nickLine.css('text-align', 'right');
+                nickBox.css('background', 'pink');
+                nickBox.append(nickname.val())
+                nickLine.append(nickBox);
+                $('#chatView').append(nickLine);
+
+                msgBox.append(msg.val());
+                msgBox.css('display', 'inline-block');
+                msgLine.css('text-align', 'right');
+                msgBox.css('background', 'pink');
+                msgLine.append(msgBox);
+                $('#chatView').append(msgLine);
+                msg.val('');
+                chatView.scrollTop = chatView.scrollHeight;
+            }
+        });
+
+
+        //받아들이는 모든 메세지 처리
+        socket.on('Message Send', function (msg, nickname) {
+            var msgLine = $('<div class="msgLine">');
+            var msgBox = $('<div class="msgBox">');
+            var nickLine = $('<div class="nickLine">');
+            var nickBox = $('<div class="nickBox">');
+            nickBox.css('display', 'inline-block');
+            nickLine.css('text-align', 'left');
+            nickBox.css('background', 'blue');
+            nickBox.append(nickname)
+            nickLine.append(nickBox);
+            $('#chatView').append(nickLine);
+
+            msgBox.append(msg);
+            msgBox.css('display', 'inline-block');
+            msgLine.append(msgBox);
+            $('#chatView').append(msgLine);
+            chatView.scrollTop = chatView.scrollHeight;
+        });
+
+
+        //announce로 받아들이는 모든 메세지 처리
+        socket.on('announce', function (msg) {
+            var msgLine = $('<div class="msgLine">');
+            var msgBox = $('<div class="msgBox">');
+            msgBox.css('background', 'yellow');
+            msgBox.append(msg);
+            msgBox.css('display', 'inline-block');
+            msgLine.append(msgBox);
+            $('#chatView').append(msgLine);
+            chatView.scrollTop = chatView.scrollHeight;
+        })
+
+        // online 메시지 수정하기
+        socket.on('online', function (msg) {
+            onlineDiv.innerText = `online: ${msg.join(', ')}`;
+        })
+        //editing 시 메세지 채팅창에 입력중입니다 띄워주기
+        editingDiv.addEventListener('change', function (e) {
+            socket.emit('editing');
+        });
+        socket.on('editing', function (msg) {
+            editingDiv.innerText = msg;
+        });
+    </script>
+
+</body>

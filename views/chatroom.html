@@ -84,11 +84,11 @@
 <body>
     <div id="container">
         <div id="chatView">
-
-            <div id="editing"></div>
             <form id="nicknameForm" action="">
-                <input id="nickname" placeholder="원하는 닉네임 입력" autocomplete="off" /><button>변경</button>
-                <div id="online"></div>
+            <div id="usercount"></div>
+            <input id="nickname" placeholder="원하는 닉네임 입력" autocomplete="off" /><button>변경</button>
+            <div id="typing">#</div>
+            <div id="online"></div>
             </form>
         </div>
         <form id="chatForm" onsubmit="return false">
@@ -115,14 +115,10 @@
         nicknameForm.addEventListener('submit', function (e) {
             e.preventDefault();
 
-            // if (nicknameInput.value) {
-            //     socket.emit('nickname', nicknameInput.value);
-            // }
         });
 
-        socket.on('connect', (socket, nickname) => {
-            var nickname = prompt('닉네임을 설정해주세요. 취소 버튼을 누를시 기본값은 익명입니다.', '');
-            socket.emit('Message Send', nickname)
+        socket.on('typing', (socket, nickname) => {
+            nickname = socket.nickname
         });
 
         //chatForm에서 일어나는 EventListener에 대한 처리이며, 확인버튼을 눌렀을경우 발동함
@@ -135,7 +131,7 @@
             } else {
                 //내가 보내는 메세지
                 socket.emit('Message Send', msg.val(), nickname.val());
-
+                socket.emit('typing', nickname)
                 var msgLine = $('<div class="msgLine">');
                 var msgBox = $('<div class="msgBox">');
                 var nickLine = $('<div class="nickLine">');
@@ -168,11 +164,10 @@
             var nickBox = $('<div class="nickBox">');
             nickBox.css('display', 'inline-block');
             nickLine.css('text-align', 'left');
-            nickBox.css('background', 'blue');
+            nickBox.css('background', 'skyblue');
             nickBox.append(nickname)
             nickLine.append(nickBox);
             $('#chatView').append(nickLine);
-
             msgBox.append(msg);
             msgBox.css('display', 'inline-block');
             msgLine.append(msgBox);
@@ -192,18 +187,21 @@
             $('#chatView').append(msgLine);
             chatView.scrollTop = chatView.scrollHeight;
         })
-
-        // online 메시지 수정하기
-        socket.on('online', function (msg) {
-            onlineDiv.innerText = `online: ${msg.join(', ')}`;
+        socket.on('typing', function(nickname){
+            $('#typing').text(nickname);
+         });
+         $('#msg').on('keyup', function(e){
+          if (e.target.value) {
+            socket.emit('typing', $('#nick').val());
+          }
         })
-        //editing 시 메세지 채팅창에 입력중입니다 띄워주기
-        editingDiv.addEventListener('change', function (e) {
-            socket.emit('editing');
-        });
-        socket.on('editing', function (msg) {
-            editingDiv.innerText = msg;
-        });
+
+        socket.on('User count', (count) => {
+        var userCounter = document.getElementById('usercount');
+        userCounter.innerText = "현재 " + count + "명이 서버에 접속해있습니다.";
+    });
+
+
     </script>
 
 </body>

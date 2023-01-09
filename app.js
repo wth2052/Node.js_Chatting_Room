@@ -19,15 +19,17 @@ app.use('/', function (req, res) {
 ////연결이 성립되면
 io.on('connection', (socket) => {
     socketList.push(socket);
-
+    socket.emit('User count', io.engine.clientsCount);
     console.log('User Join');
     //연결이 성립됨과 동시에 채팅 앱 상에는 웰컴 메세지를 띄운다.
     io.emit('announce', `${socket.id}님, 환영합니다. 접속해 있는 유저들에게 메세지를 보내보세요!`
     );
     //editing 상태일 경우 채팅창에 socket.id 가 입력중임을 나타내준다.
-    socket.on('editing', () => {
-        io.emit('editing', `${socket.id} 가 입력중입니다.`);
-    })
+	socket.on('typing', function(nickname){
+		if(nickname !== '') {
+			socket.broadcast.emit('typing', nickname + ' is typing...');
+		}
+	});
 
 
     //SEND 이벤트로 받아들이는 요청에 대한 처리
@@ -38,13 +40,8 @@ io.on('connection', (socket) => {
             }
         });
     
-    console.log("닉네임 아아", nickname)
     });
     
-    //닉네임 설정
-    socket.on('nickname', (name) => {
-
-    })
 
     //연결이 끊기면
     //채팅 앱 상에는 디스커넥트 메세지를 띄운다.
@@ -54,13 +51,15 @@ io.on('connection', (socket) => {
         io.emit('announce', ` ${socket.id}가 퇴장했습니다.`);
         // 나가는 사람을 제외한 나머지 유저에게만 메세지를 전송한다.
         connected = connected.filter(id => id !== socket.id);
-        io.emit('online', connected);
     });
 
+    
     //서버의 모든 요청을 console.log로 띄운다. 디버그 전용
     socket.onAny((event, ...args) => {
         console.log(event, args);
     })
+
+
 });
 
 server.listen(port, function () {

@@ -2,8 +2,9 @@
 
 var express = require('express');
 var app = express();
-
+var wait = require('waait')
 var http = require('http');
+
 var server = http.Server(app);
 
 var socket = require('socket.io');
@@ -11,20 +12,21 @@ var io = socket(server);
 let connected = [];
 var port = 3000;
 var socketList = [];
-
 app.use('/', function (req, res) {
     res.sendFile(__dirname + '/views/chatroom.html');
 });
-
+function sleep(ms) {
+    return new Promise((r) => setTimeout(r, ms));
+  }
 ////연결이 성립되면
 io.on('connection', (socket) => {
     socketList.push(socket);
     socket.emit('User count', io.engine.clientsCount);
     console.log('User Join');
-    //연결이 성립됨과 동시에 채팅 앱 상에는 웰컴 메세지를 띄운다.
+    //연결이 성립됨과 동시에 채팅 앱 상에 웰컴 메세지를 띄운다.
     io.emit('announce', `${socket.id}님, 환영합니다. 접속해 있는 유저들에게 메세지를 보내보세요!`
     );
-    //editing 상태일 경우 채팅창에 socket.id 가 입력중임을 나타내준다.
+    //editing 상태일 경우 채팅창에 nickname이 입력중임을 나타내준다.
 	socket.on('typing', function(nickname){
 		if(nickname !== '') {
 			socket.broadcast.emit('typing', nickname + ' is typing...');
@@ -32,14 +34,15 @@ io.on('connection', (socket) => {
 	});
 
 
-    //SEND 이벤트로 받아들이는 요청에 대한 처리
+    //Message Send 이벤트로 받아들이는 요청에 대한 처리
     socket.on('Message Send', function (msg, nickname) {
-        socketList.forEach(function (item, i) {
+        socketList.forEach(function (item) {
             if (item != socket) {
                 item.emit('Message Send', msg, nickname);
+               
             }
         });
-    
+        socket.broadcast.emit('typing', '');
     });
     
 

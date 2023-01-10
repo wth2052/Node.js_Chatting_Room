@@ -79,6 +79,10 @@
             outline: none;
             color: #fff;
         }
+        #typing 
+        { position: absolute; right: 0; bottom: 80px; outline: 1px solid darkred
+        }
+        
     </style>
 
 <body>
@@ -87,7 +91,7 @@
             <form id="nicknameForm" action="">
             <div id="usercount"></div>
             <input id="nickname" placeholder="원하는 닉네임 입력" autocomplete="off" /><button>변경</button>
-            <div id="typing">#</div>
+            <div id="typing"></div>
             <div id="online"></div>
             </form>
         </div>
@@ -112,6 +116,9 @@
         var nicknameInput = document.getElementById('nicknameInput');
         var editingDiv = document.getElementById('editing');
         var onlineDiv = document.getElementById('online');
+
+
+
         nicknameForm.addEventListener('submit', function (e) {
             e.preventDefault();
 
@@ -152,6 +159,7 @@
                 $('#chatView').append(msgLine);
                 msg.val('');
                 chatView.scrollTop = chatView.scrollHeight;
+                
             }
         });
 
@@ -189,10 +197,12 @@
         })
         socket.on('typing', function(nickname){
             $('#typing').text(nickname);
+            
          });
          $('#msg').on('keyup', function(e){
           if (e.target.value) {
-            socket.emit('typing', $('#nick').val());
+            socket.emit('typing', $('#nickname').val());
+            
           }
         })
 

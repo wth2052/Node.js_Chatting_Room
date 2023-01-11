@@ -117,12 +117,18 @@ io.on('connection', (socket) => {
 //현재 룸을 구하는 함수(여기서 작동을 안해서 현재 방을 못찾음)
 // Room_1과같이 바로 써넣어버리면 작동 하는데,
 //방을 만든 의미가 없으니 고쳐야함
+// 소켓이 현재 연결된 방의 이름 
 function getUserCurrentRoom(socket){
     let currentRoom = '';
-    let whereami = Array.from(socket.rooms)
-        currentRoom = whereami
-        console.log("나는 오디?",whereami)
-    return currentRoom
+    let socketRooms = Array.from(socket.rooms)
+    for( let i = 0 ; i < socketRooms.length; i ++ ){
+        if(socketRooms[i].indexOf('Room_') !== -1){
+            currentRoom = socketRooms[i];
+            break;
+        } 
+    }
+    console.log("히히 나는오디?",currentRoom)
+    return currentRoom;
 }
 http.listen(port, function () {
     console.log('Server On !');

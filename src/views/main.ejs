@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+  <title>캐치 마인드 我畫你猜</title>
+  <style>
+    #container {
+    width: 500px;
+    height: 500px;
+    border: 1px solid black;
+    background: ivory;
+    }
+    #onlineDiv {
+    width: 100px;
+    height: 100px;
+    }
+    #chatView {
+    height: 90%;
+    overflow-y: scroll;
+    }
+    #chatForm {
+    height: 10%;
+    border-top: 1px solid black;
+    text-align: center;
+    }
+    #msg {
+    width: 80%;
+    height: 32px;
+    border-radius: 8px;
+    }
+    .msgLine {
+    margin: 15px;
+    }
+    .msgBox {
+    border: 1px solid black;
+    background: skyblue;
+    padding: 2px 5px;
+    border-radius: 10px;
+    }
+    #send {
+    width: 16%;
+    height: 34px;
+    border-radius: 50px;
+    background: black;
+    color: white;
+    }
+    #nicknameForm {
+    border: none;
+    padding: 10px 5px;
+    margin: 0px 0px 40px;
+    position: fixed;
+    bottom: 0%;
+    height: 5%;
+    float: left;
+    }
+    #nicknameForminput:focus {
+    outline: none;
+    }
+    #nicknameForm>button {
+    background: #333;
+    border: none;
+    padding: 0 1rem;
+    margin: 0.3rem;
+    border-radius: 3px;
+    outline: none;
+    color: #fff;
+    }
+    #typing
+    { position: absolute; right: 0; bottom: 80px; outline: 1px solid darkred
+    }
+    #messages { list-style-type: none; margin: 0; padding: 0; }
+    #messages li { padding: 5px 10px; }
+    #messages li:nth-child(odd) { background: #eee; }
+    .canvas {
+    width: 950px;
+    height: 650px;
+    background-color: white;
+    border: 3px solid magenta;
+    }
+  </style>
+</head>
+<div class="row">
+  <!-- 대기실-->
+  <div class="col-lg-4">
+    <div id="container">
+      <div id="chatView">
+        <form id="nicknameForm" action="">
+          <div id="usercount"></div>
+          <input id="nickname" placeholder="원하는 닉네임 입력" autocomplete="off">
+          <button>&#xBCC0;&#xACBD;</button>
+          <div id="typing"></div>
+          <div id="online"></div>
+        </form>
+      </div>
+      <form id="chatForm" onsubmit="return false">
+        <input id="msg" type="text">
+        <input id="send" type="submit" value="전송">
+      </form>
+    </div>
+    <div class="card">
+      <div class="card-header">&#xB300;&#xAE30;&#xC2E4;</div>
+      <div class="card-body">
+        <form action="">
+          <div class="input-group mb-3">
+            <input class="form-control" id="m" type="text" autocomplete="off">
+            <div class="input-group-append">
+              <button class="btn btn-primary" id="msg-send" placeholder="message">Send</button>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="card-footer">
+        <ul id="messages"></ul>
+      </div>
+    </div>
+  </div>
+  <!-- 방선택-->
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header">&#xBC29;&#xC120;&#xD0DD;</div>
+      <div class="card-body">
+        <div class="input-group mb-1">
+          <select class="form-control" id="select-room">
+            <option value="none" selected="selected">&#xBC29;&#xC744; &#xC120;&#xD0DD;&#xD574;&#xC8FC;&#xC138;&#xC694;</option>
+            <option value="1">&#xAC8C;&#xC784;&#xB8F8; 1</option>
+            <option value="2">&#xAC8C;&#xC784;&#xB8F8; 2</option>
+            <option value="3">&#xAC8C;&#xC784;&#xB8F8; 3</option>
+          </select>
+          <div class="input-group-append">
+            <button class="btn btn-success" id="select-room-button" placeholder="message">Select</button>
+          </div>
+        </div>
+        <form action="">
+          <div class="input-group mb-1">
+            <input class="form-control" id="room-message" type="text" autocomplete="off">
+            <div class="input-group-append">
+              <button class="btn btn-primary" id="room-msg-send" placeholder="message">Send</button>
+            </div>
+          </div>
+          <div id="jsShowTime">&#xC2DC;&#xAC04;&#xCD08; &#xD45C;&#xC2DC;</div>
+          <div id="jsWords">&#xC815;&#xB2F5; &#xD45C;&#xC2DC;</div>
+          <div id="roomusercount"></div>
+          <div>&#xCE94;&#xBC84;&#xC2A4;&#xAC00; &#xB4E4;&#xC5B4;&#xAC08; &#xC790;&#xB9AC;&#xC785;&#xB2C8;&#xB2E4;
+            <canvas class="canvas" id="jsCanvas">&#xCE94;&#xBC84;&#xC2A4;</canvas>
+          </div>
+        </form>
+      </div>
+      <div class="card-footer">
+        <ul id="room-messages">aa</ul>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="room-leave" placeholder="message">Leave Room</button>
+  </div>
+</div>
+</script>
+
+<script>
+
+  let socket = io();
+  let chatView = document.getElementById('chatView');
+  let chatForm = document.getElementById('chatForm');
+  let nicknameForm = document.getElementById('nicknameForm');
+  let nicknameInput = document.getElementById('nicknameInput');
+  let editingDiv = document.getElementById('editing');
+  let onlineDiv = document.getElementById('online');
+
+  /*
+  왜 모듈로 안빼지누? 내 스파게티 코드 얼른 나눠져주세요
+  */
+  
+  nicknameForm.addEventListener('submit', function (e) {
+  e.preventDefault();
+  });
+  socket.on('typing', (socket, nickname) => {
+  nickname = socket.nickname
+  });
+  //chatForm에서 일어나는 EventListener에 대한 처리이며, 확인버튼을 눌렀을경우 발동함
+  chatForm.addEventListener('submit', function () {
+  let msg = $('#msg');
+  let nickname = $('#nickname')
+  if (msg.val() === '') {
+  return;
+  } else {
+  //내가 보내는 메세지
+  socket.emit('Message Send', msg.val(), nickname.val());
+  let msgLine = $('<div class="msgLine">');
+  let msgBox = $('<div class="msgBox">');
+  let nickLine = $('<div class="nickLine">');
+  let nickBox = $('<div class="nickBox">');
+  nickBox.css('display', 'inline-block');
+  nickLine.css('text-align', 'right');
+  nickBox.css('background', 'pink');
+  nickBox.append(nickname.val())
+  nickLine.append(nickBox);
+  $('#chatView').append(nickLine);
+  msgBox.append(msg.val());
+  msgBox.css('display', 'inline-block');
+  msgLine.css('text-align', 'right');
+  msgBox.css('background', 'pink');
+  msgLine.append(msgBox);
+  $('#chatView').append(msgLine);
+  msg.val('');
+  chatView.scrollTop = chatView.scrollHeight;
+  }
+  });
+  //받아들이는 모든 메세지 처리
+  socket.on('Message Send', function (msg, nickname) {
+  let msgLine = $('<div class="msgLine">');
+  let msgBox = $('<div class="msgBox">');
+  let nickLine = $('<div class="nickLine">');
+  let nickBox = $('<div class="nickBox">');
+  nickBox.css('display', 'inline-block');
+  nickLine.css('text-align', 'left');
+  nickBox.css('background', 'skyblue');
+  nickBox.append(nickname)
+  nickLine.append(nickBox);
+  $('#chatView').append(nickLine);
+  msgBox.append(msg);
+  msgBox.css('display', 'inline-block');
+  msgLine.append(msgBox);
+  $('#chatView').append(msgLine);
+  chatView.scrollTop = chatView.scrollHeight;
+  });
+  //announce로 받아들이는 모든 메세지 처리
+  socket.on('announce', function (msg) {
+  let msgLine = $('<div class="msgLine">');
+  let msgBox = $('<div class="msgBox">');
+  msgBox.css('background', 'yellow');
+  msgBox.append(msg);
+  msgBox.css('display', 'inline-block');
+  msgLine.append(msgBox);
+  $('#chatView').append(msgLine);
+  chatView.scrollTop = chatView.scrollHeight;
+  })
+  socket.on('typing', function(nickname){
+  $('#typing').text(nickname);
+  });
+  // 키를 눌렀을시 감지함, focus blur로 이 Input창이 called되었을 때에 이벤트 핸들링을 할수 있는게 있음.
+  // 작동 순서가 중요하다
+  $('#msg').on('keyup', function(e){
+  if (e.target.value) {
+  socket.emit('typing', $('#nickname').val());
+  }
+  })
+  socket.on('User count', (count) => {
+  let userCounter = document.getElementById('usercount');
+  userCounter.innerText = "현재 " + count + "명이 서버에 접속해있습니다.";
+  });
+  socket.on('Room User Count', (count) => {
+  let roomUserCount = document.getElementById('roomusercount');
+  roomUserCount.innerText = "현재 방에는" + count + "명이 서버에 접속해있습니다.";
+  });
+  let gamelobby = io.connect('http://127.0.0.1:3000/gamelobby')
+  $('#msg-send').click(() => {
+  socket.emit('request_message', $('#m').val());
+  $('#m').val('');
+  return false;
+  });
+  $('#select-room-button').click(() => {
+  let roomName = $('#select-room').val();
+  if(roomName === "none")
+  return alert("방을 선택해주세요.");
+  socket.emit('req_join_room', roomName)
+  });
+  $('#room-msg-send').click(() => {
+  socket.emit('req_room_message', $('#room-message').val());
+  $('#room-message').val('');
+  return false;
+  });
+  $('#room-leave').click(() => {
+  socket.emit('req_leave_room');
+  $('#room-message').val('');
+  return false;
+  });
+  socket.on('response_message', (res) => {
+  $('#messages').prepend($('<li>').text(res));
+  });
+  socket.on('noti_join_room', (res) => {
+  $('#room-messages').prepend($('<li>').text(res));
+  });
+  socket.on('noti_leave_room', (res) => {
+  $('#room-messages').prepend($('<li>').text(res));
+  });
+  socket.on('noti_room_message', (res) => {
+  $('#room-messages').prepend($('<li>').text(res));
+  console.log("res",res)
+  });
+
+</script>
+<script src="/paint.js"></script>

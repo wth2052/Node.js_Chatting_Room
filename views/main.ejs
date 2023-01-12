@@ -145,6 +145,7 @@
         <ul id="room-messages">aa</ul>
       </div>
     </div>
+    <button id="room-leave" class="btn btn-primary" placeholder="message">Leave Room</button>
   </div>
 </div>
 
@@ -292,11 +293,22 @@
           return false;
         });
 
+        $('#room-leave').click(() => {
+          socket.emit('req_leave_room');
+          $('#room-message').val('');
+          return false;
+        });
+
+
+
         socket.on('response_message', (res) => {
           $('#messages').prepend($('<li>').text(res));
         });
 
         socket.on('noti_join_room', (res) => {
+          $('#room-messages').prepend($('<li>').text(res));
+        });
+        socket.on('noti_leave_room', (res) => {
           $('#room-messages').prepend($('<li>').text(res));
         });
 

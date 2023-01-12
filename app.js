@@ -6,14 +6,18 @@ const cors = require('cors');
 
 let app = express();
 const http = createServer(app);
-
+const { instrument } = require("@socket.io/admin-ui");
 const io = require('socket.io')(http, {
     cors: {
-        origin: "*",
+        origin: ["https://admin.socket.io", "http://127.0.0.1"],
         methods: ["GET", "POST"],
+        credentials: true
     },
 });
-
+instrument(io, {
+    auth: false,
+    mode: "development",
+  });
 let connected = [];
 let port = 3000;
 let socketList = [];
@@ -92,12 +96,23 @@ io.on('connection', (socket) => {
         io.to(roomName).emit('noti_join_room', "방에 입장하였습니다.");
     });
 
+    socket.on('req_leave_room', async(msg) => {
+        let userCurrentRoom = getUserCurrentRoom(socket);
+        console.log(userCurrentRoom)
+        socket.leave(userCurrentRoom);
+        io.to(userCurrentRoom).emit('noti_leave_room', "상대방이 방에서 퇴장하였습니다.", msg)
+    })
+
+
+
     // 채팅방에 채팅 요청
     socket.on('req_room_message', async(msg) => {
         let userCurrentRoom = getUserCurrentRoom(socket);
         io.to(userCurrentRoom).emit('noti_room_message', msg);
         console.log(io.sockets.adapter.rooms);
     });
+
+
 
     socket.on('disconnect', async () => {
         console.log('user disconnected');

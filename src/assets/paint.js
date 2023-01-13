@@ -1,6 +1,3 @@
-
-
-
 const canvas = document.getElementById("jsCanvas")
 const ctx = canvas.getContext("2d");
 canvas.width = 900;
@@ -47,14 +44,14 @@ if (canvas) {
 
 
 
-export const enableCanvas = () => {
+const enableCanvas = () => {
     canvas.addEventListener('mousemove', onMouseMove);
     canvas.addEventListener('mousedown', startPainting);
     canvas.addEventListener('mouseup', stopPainting);
     canvas.addEventListener('mouseleave', stopPainting);
     canvas.addEventListener('contextmenu', handleRightClick);
   };
-export const disableCanvas = () => {
+const disableCanvas = () => {
     canvas.removeEventListener('mousemove', onMouseMove);
     canvas.removeEventListener('mousedown', startPainting);
     canvas.removeEventListener('mouseup', stopPainting);

@@ -3,9 +3,9 @@
 let express = require('express');
 let {createServer} = require('http');
 const cors = require('cors');
-
 let app = express();
 const http = createServer(app);
+app.use(express.static('assets'));
 const { instrument } = require("@socket.io/admin-ui");
 const io = require('socket.io')(http, {
     cors: {
@@ -14,6 +14,8 @@ const io = require('socket.io')(http, {
         credentials: true
     },
 });
+
+
 instrument(io, {
     auth: false,
     mode: "development",
@@ -21,8 +23,7 @@ instrument(io, {
 let connected = [];
 let port = 3000;
 let socketList = [];
-
-app.set('views', __dirname + '/views');
+app.use(express.static(__dirname + '/public'));
 app.set('view engine', 'ejs');
 
 let corsOptions = {
@@ -35,7 +36,7 @@ let rooms = [];
 
 
 app.use('/', function (req, res) {
-    res.render(__dirname + '/views/main.ejs');
+    res.render(__dirname + '/public/main.ejs');
 });
 
 
@@ -45,17 +46,61 @@ io.on('connection', (socket) => {
     socket.emit('User count', io.engine.clientsCount);
     console.log('User Join');
 
-
     //연결이 성립됨과 동시에 채팅 앱 상에 웰컴 메세지를 띄운다.
     io.emit('announce', `${socket.id}님, 환영합니다. 접속해 있는 유저들에게 메세지를 보내보세요!`
     );
+
+    socket.on('drawing', function(data){
+        socket.broadcast.emit('drawing', data);
+        console.log(data);
+      });
+      
+      socket.on('rectangle', function(data){
+        socket.broadcast.emit('rectangle', data);
+        console.log(data);
+      });
+      
+
+      
+      socket.on('linedraw', function(data){
+        socket.broadcast.emit('linedraw', data);
+        console.log(data);
+      });
+      
+       socket.on('circledraw', function(data){
+        socket.broadcast.emit('circledraw', data);
+        console.log(data);
+      });
+      
+      socket.on('ellipsedraw', function(data){
+        socket.broadcast.emit('ellipsedraw', data);
+        console.log(data);
+      });
+      
+      socket.on('textdraw', function(data){
+        socket.broadcast.emit('textdraw', data);
+        console.log(data);
+      });
+      
+      socket.on('copyCanvas', function(data){
+        socket.broadcast.emit('copyCanvas', data);
+        console.log(data);
+      });
+      
+      socket.on('Clearboard', function(data){
+        socket.broadcast.emit('Clearboard', data);
+        console.log(data);
+      });
+
+
+
     //editing 상태일 경우 채팅창에 nickname이 입력중임을 나타내준다.
 	socket.on('typing', function(nickname){
 		if(nickname !== '') {
 			socket.broadcast.emit('typing', nickname + ' is typing...');
 		}
 	});
-
+   
 
     //Message Send 이벤트로 받아들이는 요청에 대한 처리
     socket.on('Message Send', function (msg, nickname) {
@@ -93,25 +138,25 @@ io.on('connection', (socket) => {
             
         }
         socket.join(roomName);
-        io.to(roomName).emit('noti_join_room', "방에 입장하였습니다.");
+        io.to(roomName).emit('noti_join_room', `${roomName}에 입장하였습니다.`);
+        socket.emit('Room User count', io.engine.clientsCount);
     });
 
     socket.on('req_leave_room', async(msg) => {
         let userCurrentRoom = getUserCurrentRoom(socket);
         console.log(userCurrentRoom)
         socket.leave(userCurrentRoom);
-        io.to(userCurrentRoom).emit('noti_leave_room', "상대방이 방에서 퇴장하였습니다.", msg)
+        io.to(userCurrentRoom).emit('noti_leave_room', `접속 id:${socket.id} 상대방이 방에서 퇴장하였습니다.`, msg)
+        
     })
-
 
 
     // 채팅방에 채팅 요청
     socket.on('req_room_message', async(msg) => {
         let userCurrentRoom = getUserCurrentRoom(socket);
         io.to(userCurrentRoom).emit('noti_room_message', msg);
-        console.log(io.sockets.adapter.rooms);
-    });
 
+    });
 
 
     socket.on('disconnect', async () => {
@@ -119,20 +164,14 @@ io.on('connection', (socket) => {
     });
 
 
-
-    
     //서버의 모든 요청을 console.log로 띄운다. 디버그 전용
     socket.onAny((event, ...args) => {
         console.log(event, args);
     })
 
-
 });
+    
 
-//현재 룸을 구하는 함수(여기서 작동을 안해서 현재 방을 못찾음)
-// Room_1과같이 바로 써넣어버리면 작동 하는데,
-//방을 만든 의미가 없으니 고쳐야함
-// 소켓이 현재 연결된 방의 이름 
 function getUserCurrentRoom(socket){
     let currentRoom = '';
     let socketRooms = Array.from(socket.rooms)
@@ -142,9 +181,19 @@ function getUserCurrentRoom(socket){
             break;
         } 
     }
-    console.log("히히 나는오디?",currentRoom)
+    console.log("히히 나는 지금 오디?",currentRoom)
     return currentRoom;
+
+    
 }
+function countRoom(roomName){
+    return io.sockets.adapter.rooms.get(roomName)?.size;
+
+
+
+    
+}
+
 http.listen(port, function () {
     console.log('Server On !');
 });

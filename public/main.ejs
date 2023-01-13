@@ -3,97 +3,147 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <link href="/src/assets/css/main.css" rel="stylesheet" type="text/css" />
+<style>
+      #container{
+        position: relative;
+        width: 1000px;
+        height: 500px;
+        background-color: #fff;
+        border-radius: 5px;
+      }
+      #imageView { border: 1px solid #000; }
+      #imageTemp { position: absolute; top: 1px; left: 1px; }
+      canvas {
+        border-radius: 5px;
+        cursor: url(../img/pen.png), crosshair;
+    }
+    #text_tool {
+    position: absolute;
+    border: 1px dashed black;
+    outline: 0;
+    z-index:1000 !important;
+    display: none;
+    overflow: hidden;
+    white-space: nowrap;
+}
+.container .btn.btn-sm{
+    background: #06f;
+    box-shadow: 0 3px 0 0 rgba(0, 0, 0, 0.5);
+    color: #fff;
+    outline: none;
+    cursor: pointer;
+    text-shadow: 0 1px #06f;
+    display: inline-block;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 15px;
+    margin-right: 5px;
+}
+.container .btn.btn-sm:active{
+   background: #06f; 
+}
+label{
+    color: #000000;
+}
+#container2 {
+width: 750px;
+height: 500px;
+border: 1px solid black;
+background: ivory;
+}
+#onlineDiv {
+width: 100px;
+height: 100px;
+}
+#chatView {
+height: 90%;
+overflow-y: scroll;
+}
+#chatForm {
+height: 10%;
+border-top: 1px solid black;
+text-align: center;
+}
+#msg {
+width: 80%;
+height: 32px;
+border-radius: 8px;
+}
+.msgLine {
+margin: 15px;
+}
+.msgBox {
+border: 1px solid black;
+background: skyblue;
+padding: 2px 5px;
+border-radius: 10px;
+}
+#send {
+width: 16%;
+height: 34px;
+border-radius: 50px;
+background: black;
+color: white;
+}
+#nicknameForm {
+border: none;
+padding: 10px 5px;
+margin: 0px 0px 40px;
+position: fixed;
+bottom: 0%;
+height: 5%;
+float: left;
+}
+#nicknameForminput:focus {
+outline: none;
+}
+#nicknameForm>button {
+background: #333;
+border: none;
+padding: 0 1rem;
+margin: 0.3rem;
+border-radius: 3px;
+outline: none;
+color: #fff;
+}
+#typing
+{ position: absolute; right: 0; bottom: 80px; outline: 1px solid darkred
+}
+#messages { list-style-type: none; margin: 0; padding: 0; }
+#messages li { padding: 5px 10px; }
+#messages li:nth-child(odd) { background: #eee; }
+canvas {
+	border-radius: 5px;
+	cursor: url(../img/pen.png), crosshair;
+}
+</style>
 
-  <script type="module" >
-    import  {enableCanvas , disableCanvas} from "./paint.js"
-    disableCanvas()
-  </script>
+
+  <!-- 일단 이렇게 쓰고, js 분리할때 같이 분리할것. 이쪽엔 일단 게임 관련 로직을 작성 -->
+  <script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="jscolor/jscolor.min.js"></script>
+  <script type="text/javascript" src="canvas.js"></script> 
+  <script type="text/javascript" src="jquery.min.js"></script>
+
+  <!-- <script type="module" >
+    import  {enableCanvas , disableCanvas} from "./js/paint.js"
+    //일단은 무지성 활성화~~캔버스 가즈앙~
+    enableCanvas()
+
+  </script> -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
   <title>캐치 마인드 我畫你猜</title>
-  <style>
-    #container {
-    width: 500px;
-    height: 500px;
-    border: 1px solid black;
-    background: ivory;
-    }
-    #onlineDiv {
-    width: 100px;
-    height: 100px;
-    }
-    #chatView {
-    height: 90%;
-    overflow-y: scroll;
-    }
-    #chatForm {
-    height: 10%;
-    border-top: 1px solid black;
-    text-align: center;
-    }
-    #msg {
-    width: 80%;
-    height: 32px;
-    border-radius: 8px;
-    }
-    .msgLine {
-    margin: 15px;
-    }
-    .msgBox {
-    border: 1px solid black;
-    background: skyblue;
-    padding: 2px 5px;
-    border-radius: 10px;
-    }
-    #send {
-    width: 16%;
-    height: 34px;
-    border-radius: 50px;
-    background: black;
-    color: white;
-    }
-    #nicknameForm {
-    border: none;
-    padding: 10px 5px;
-    margin: 0px 0px 40px;
-    position: fixed;
-    bottom: 0%;
-    height: 5%;
-    float: left;
-    }
-    #nicknameForminput:focus {
-    outline: none;
-    }
-    #nicknameForm>button {
-    background: #333;
-    border: none;
-    padding: 0 1rem;
-    margin: 0.3rem;
-    border-radius: 3px;
-    outline: none;
-    color: #fff;
-    }
-    #typing
-    { position: absolute; right: 0; bottom: 80px; outline: 1px solid darkred
-    }
-    #messages { list-style-type: none; margin: 0; padding: 0; }
-    #messages li { padding: 5px 10px; }
-    #messages li:nth-child(odd) { background: #eee; }
-    .canvas {
-    width: 950px;
-    height: 650px;
-    background-color: white;
-    border: 3px solid magenta;
-    }
-  </style>
+
 </head>
 <div class="row">
   <!-- 대기실-->
   <div class="col-lg-4">
-    <div id="container">
+    <div id="container2">
       <div id="chatView">
         <form id="nicknameForm" action="">
           <div id="usercount"></div>
@@ -151,20 +201,91 @@
           <div id="jsShowTime">&#xC2DC;&#xAC04;&#xCD08; &#xD45C;&#xC2DC;</div>
           <div id="jsWords">&#xC815;&#xB2F5; &#xD45C;&#xC2DC;</div>
           <div id="roomusercount"></div>
-          <div>&#xCE94;&#xBC84;&#xC2A4;&#xAC00; &#xB4E4;&#xC5B4;&#xAC08; &#xC790;&#xB9AC;&#xC785;&#xB2C8;&#xB2E4;
-            <canvas class="canvas" id="jsCanvas">&#xCE94;&#xBC84;&#xC2A4;</canvas>
+          <div>ㅋㅋ
+            <div class="container">
+              <!-- 만약 로비에 입장할 경우, 이쪽의 텍스트를 잠시후 게임이 시작됩니다.. 등으로 바꿔야함  -->
+              <div class="alert alert-info" style="padding: 10px !important; margin-bottom: 5px; width:88%">
+                <strong>캐치마인드에 오신 여러분들을 환영합니다.&#10084;</strong> 방 입장후 게임을 즐겨주세요.
+              </div>
+                  <p style="">
+                  <button type="button" class="btn btn-warning btn-sm" value="pencil" id="pencil-button">펜 그리기</button>
+                  <button type="button" class="btn btn-warning btn-sm" value="rect" id="rect-button">네모</button>
+                  <button type="button" class="btn btn-warning btn-sm" value="circle" id="circle-button">원</button>
+                  <button type="button" class="btn btn-warning btn-sm" value="ellipse" id="ellipse-button">타원</button>
+                  <button type="button" class="btn btn-warning btn-sm" value="line" id="line-button">선 </button>
+                  <button type="button" class="btn btn-warning btn-sm" value="text" id="text-button">텍스트</button>
+                  <button type="button" class="btn btn-warning btn-sm" id="clear-all">보드 지우기</button>
+                  <label for="colour" style="position:absolute;">폰트 색상 : </label>
+                  <input id="colour-picker" value="#000000" style="width:80px;" class="jscolor {width:243, height:150, position:'right',
+              borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'}">
+                  <span class="form-group" style="width: 90px;display: inline-block;">
+                    <label for="line-Width">펜 굵기: </label>
+                    <select class="form-control" id="line-Width">
+                      <option>2</option>
+                      <option>4</option>
+                      <option>6</option>
+                      <option>8</option>
+                      <option>10</option>
+                      <option>12</option>
+                      <option>14</option>
+                    </select>
+                  </span>
+                   <span class="form-group" style="width: 130px;display: inline-block;">
+                    <label for="draw-text-font-family">폰트: </label>
+                    <select class="form-control" id="draw-text-font-family">
+                      <option value="Arial">Arial</option>
+                      <option value="Verdana" selected>Verdana</option>
+                      <option value="Times New Roman">Times New Roman</option>
+                      <option value="Courier New">Courier New</option>
+                      <option value="serif">serif</option>
+                      <option value="sans-serif">sans-serif</option>
+                    </select>
+                  </span>
+                  <span class="form-group" style="width: 90px;display: inline-block;">
+                    <label for="draw-text-font-size">폰트 크기: </label>
+                    <select class="form-control" id="draw-text-font-size">
+                      <option value="16">16 Px</option>
+                      <option value="18">18 Px</option>
+                      <option value="20">20 Px</option>
+                      <option value="22">22 Px</option>
+                      <option value="24">24 Px</option>
+                      <option value="26">26 Px</option>
+                      <option value="28">28 Px</option>
+                      <option value="30">30 Px</option>
+                      <option value="32" selected>32 Px</option>
+                      <option value="34">34 Px</option>
+                      <option value="36">36 Px</option>
+                      <option value="38">38 Px</option>
+                      <option value="40">40 Px</option>
+                    </select>
+                  </span>
+                  </p>
+            
+                  <div id="container">
+                    <canvas id="imageView" width="1000" height="500">
+                      <p>Unfortunately, your browser is currently unsupported by our web
+                      application.  We are sorry for the inconvenience. Please use one of the
+                      supported browsers listed below, or draw the image you want using an
+                      offline tool.</p>
+                      <p>Supported browsers: <a href="http://www.opera.com">Opera</a>, <a
+                        href="http://www.mozilla.com">Firefox</a>, <a
+                        href="http://www.apple.com/safari">Safari</a>, and <a
+                        href="http://www.konqueror.org">Konqueror</a>.</p>
+                    </canvas>
+                  </div>
+              </div>
           </div>
         </form>
       </div>
       <div class="card-footer">
-        <ul id="room-messages">aa</ul>
+        <ul id="room-messages">방 메세지 출력 하는 곳</ul>
       </div>
     </div>
     <button class="btn btn-primary" id="room-leave" placeholder="message">Leave Room</button>
   </div>
 </div>
-</script>
 
+  
 <script>
   let socket = io();
   let chatView = document.getElementById('chatView');

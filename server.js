@@ -49,7 +49,7 @@ io.on('connection', (socket) => {
     //연결이 성립됨과 동시에 채팅 앱 상에 웰컴 메세지를 띄운다.
     io.emit('announce', `${socket.id}님, 환영합니다. 접속해 있는 유저들에게 메세지를 보내보세요!`
     );
-
+    //연필로 그리기
     socket.on('drawing', function(data){
         socket.broadcast.emit('drawing', data);
         console.log(data);
@@ -61,32 +61,32 @@ io.on('connection', (socket) => {
       });
       
 
-      
+      //선 그리기
       socket.on('linedraw', function(data){
         socket.broadcast.emit('linedraw', data);
         console.log(data);
       });
-      
+      //원 그리기
        socket.on('circledraw', function(data){
         socket.broadcast.emit('circledraw', data);
         console.log(data);
       });
-      
+      //타원 그리기
       socket.on('ellipsedraw', function(data){
         socket.broadcast.emit('ellipsedraw', data);
         console.log(data);
       });
-      
+      //텍스트 쓰기
       socket.on('textdraw', function(data){
         socket.broadcast.emit('textdraw', data);
         console.log(data);
       });
-      
+      //나도 몰루? 인도형 뭘만들었누?
       socket.on('copyCanvas', function(data){
         socket.broadcast.emit('copyCanvas', data);
         console.log(data);
       });
-      
+      //보드 지우기
       socket.on('Clearboard', function(data){
         socket.broadcast.emit('Clearboard', data);
         console.log(data);

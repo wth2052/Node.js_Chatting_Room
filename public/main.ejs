@@ -44,10 +44,10 @@
    background: #06f; 
 }
 label{
-    color: #fff;
+    color: #000000;
 }
 #container2 {
-width: 500px;
+width: 750px;
 height: 500px;
 border: 1px solid black;
 background: ivory;
@@ -203,22 +203,23 @@ canvas {
           <div id="roomusercount"></div>
           <div>ㅋㅋ
             <div class="container">
+              <!-- 만약 로비에 입장할 경우, 이쪽의 텍스트를 잠시후 게임이 시작됩니다.. 등으로 바꿔야함  -->
               <div class="alert alert-info" style="padding: 10px !important; margin-bottom: 5px; width:88%">
                 <strong>캐치마인드에 오신 여러분들을 환영합니다.&#10084;</strong> 방 입장후 게임을 즐겨주세요.
               </div>
                   <p style="">
-                  <button type="button" class="btn btn-warning btn-sm" value="pencil" id="pencil-button">Pencil</button>
-                  <button type="button" class="btn btn-warning btn-sm" value="rect" id="rect-button">Rectangle</button>
-                  <button type="button" class="btn btn-warning btn-sm" value="circle" id="circle-button">Circle</button>
-                  <button type="button" class="btn btn-warning btn-sm" value="ellipse" id="ellipse-button">Ellipse</button>
-                  <button type="button" class="btn btn-warning btn-sm" value="line" id="line-button">Line</button>
-                  <button type="button" class="btn btn-warning btn-sm" value="text" id="text-button">Text</button>
-                  <button type="button" class="btn btn-warning btn-sm" id="clear-all">Clear All</button>
-                  <label for="colour" style="position:absolute;">Colour : </label>
+                  <button type="button" class="btn btn-warning btn-sm" value="pencil" id="pencil-button">펜 그리기</button>
+                  <button type="button" class="btn btn-warning btn-sm" value="rect" id="rect-button">네모</button>
+                  <button type="button" class="btn btn-warning btn-sm" value="circle" id="circle-button">원</button>
+                  <button type="button" class="btn btn-warning btn-sm" value="ellipse" id="ellipse-button">타원</button>
+                  <button type="button" class="btn btn-warning btn-sm" value="line" id="line-button">선 </button>
+                  <button type="button" class="btn btn-warning btn-sm" value="text" id="text-button">텍스트</button>
+                  <button type="button" class="btn btn-warning btn-sm" id="clear-all">보드 지우기</button>
+                  <label for="colour" style="position:absolute;">폰트 색상 : </label>
                   <input id="colour-picker" value="#000000" style="width:80px;" class="jscolor {width:243, height:150, position:'right',
               borderColor:'#FFF', insetColor:'#FFF', backgroundColor:'#666'}">
                   <span class="form-group" style="width: 90px;display: inline-block;">
-                    <label for="line-Width">Thickness: </label>
+                    <label for="line-Width">펜 굵기: </label>
                     <select class="form-control" id="line-Width">
                       <option>2</option>
                       <option>4</option>
@@ -230,7 +231,7 @@ canvas {
                     </select>
                   </span>
                    <span class="form-group" style="width: 130px;display: inline-block;">
-                    <label for="draw-text-font-family">Font: </label>
+                    <label for="draw-text-font-family">폰트: </label>
                     <select class="form-control" id="draw-text-font-family">
                       <option value="Arial">Arial</option>
                       <option value="Verdana" selected>Verdana</option>
@@ -241,7 +242,7 @@ canvas {
                     </select>
                   </span>
                   <span class="form-group" style="width: 90px;display: inline-block;">
-                    <label for="draw-text-font-size">Font Size: </label>
+                    <label for="draw-text-font-size">폰트 크기: </label>
                     <select class="form-control" id="draw-text-font-size">
                       <option value="16">16 Px</option>
                       <option value="18">18 Px</option>

@@ -2,5 +2,7 @@
 // import './login';
 // import './notifications';
 // import './chat';
-import '.paint.js';
+const paint = require('./paint')
 // import './players';
+
+

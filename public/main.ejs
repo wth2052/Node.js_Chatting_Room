@@ -374,10 +374,12 @@ canvas {
   socket.emit('typing', $('#nickname').val());
   }
   })
+  //User 카운트
   socket.on('User count', (count) => {
   let userCounter = document.getElementById('usercount');
   userCounter.innerText = "현재 " + count + "명이 서버에 접속해있습니다.";
   });
+  //방내 User 카운트
   socket.on('Room User Count', (count) => {
   let roomUserCount = document.getElementById('roomusercount');
   roomUserCount.innerText = "현재 방에는" + count + "명이 서버에 접속해있습니다.";
